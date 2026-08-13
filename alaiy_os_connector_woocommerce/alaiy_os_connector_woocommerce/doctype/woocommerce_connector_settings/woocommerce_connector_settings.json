@@ -7,22 +7,23 @@
   "field_order": [
     "is_enabled",
     "sb_connection",
-    "template_api_url",
-    "template_api_token",
+    "wc_store_url",
+    "wc_consumer_key",
+    "wc_consumer_secret",
     "sb_defaults",
-    "template_company",
-    "template_default_warehouse",
-    "template_price_list",
+    "wc_company",
+    "wc_default_warehouse",
+    "wc_price_list",
     "sb_schedule",
-    "template_pull_sync_interval",
-    "template_push_sync_interval"
+    "wc_pull_sync_interval",
+    "wc_push_sync_interval"
   ],
   "fields": [
     {
       "default": "0",
       "fieldname": "is_enabled",
       "fieldtype": "Check",
-      "label": "Enable Template"
+      "label": "Enable WooCommerce"
     },
     {
       "fieldname": "sb_connection",
@@ -30,17 +31,24 @@
       "label": "API Connection"
     },
     {
-      "description": "Base URL of the external API, e.g. https://api.example.com/v1",
-      "fieldname": "template_api_url",
+      "description": "The store's own site URL, e.g. https://example.com (no trailing slash, no /wp-json suffix -- the client appends /wp-json/wc/v3 itself).",
+      "fieldname": "wc_store_url",
       "fieldtype": "Data",
       "in_list_view": 1,
-      "label": "API URL",
+      "label": "Store URL",
       "reqd": 1
     },
     {
-      "fieldname": "template_api_token",
+      "description": "From WooCommerce > Settings > Advanced > REST API. Needs Read/Write permission.",
+      "fieldname": "wc_consumer_key",
+      "fieldtype": "Data",
+      "label": "Consumer Key",
+      "reqd": 1
+    },
+    {
+      "fieldname": "wc_consumer_secret",
       "fieldtype": "Password",
-      "label": "API Token",
+      "label": "Consumer Secret",
       "reqd": 1
     },
     {
@@ -49,7 +57,7 @@
       "label": "Alaiy OS Defaults"
     },
     {
-      "fieldname": "template_company",
+      "fieldname": "wc_company",
       "fieldtype": "Link",
       "label": "Company",
       "options": "Company",
@@ -57,14 +65,14 @@
     },
     {
       "description": "Default warehouse for stock synced through this connector.",
-      "fieldname": "template_default_warehouse",
+      "fieldname": "wc_default_warehouse",
       "fieldtype": "Link",
       "label": "Default Warehouse",
       "options": "Warehouse",
       "reqd": 1
     },
     {
-      "fieldname": "template_price_list",
+      "fieldname": "wc_price_list",
       "fieldtype": "Link",
       "label": "Price List",
       "options": "Price List",
@@ -78,7 +86,7 @@
     {
       "default": "Disabled",
       "description": "How often to automatically run the pull sync (external → Alaiy OS).",
-      "fieldname": "template_pull_sync_interval",
+      "fieldname": "wc_pull_sync_interval",
       "fieldtype": "Select",
       "label": "Pull Sync Interval",
       "options": "Disabled\n5 min\n15 min\n30 min\n60 min",
@@ -87,7 +95,7 @@
     {
       "default": "Disabled",
       "description": "How often to automatically run the push sync (Alaiy OS → external).",
-      "fieldname": "template_push_sync_interval",
+      "fieldname": "wc_push_sync_interval",
       "fieldtype": "Select",
       "label": "Push Sync Interval",
       "options": "Disabled\n5 min\n15 min\n30 min\n60 min",
@@ -98,8 +106,8 @@
   "links": [],
   "modified": "2026-07-20 00:00:00.000000",
   "modified_by": "Administrator",
-  "module": "Alaiy Os Connector Template",
-  "name": "Template Connector Settings",
+  "module": "Alaiy Os Connector WooCommerce",
+  "name": "WooCommerce Connector Settings",
   "owner": "Administrator",
   "permissions": [
     {

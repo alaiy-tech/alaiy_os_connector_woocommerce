@@ -1,9 +1,9 @@
 [project]
-name = "alaiy_os_connector_template"
+name = "alaiy_os_connector_woocommerce"
 authors = [
     { name = "Alaiy", email = "mail@alaiy.com"}
 ]
-description = "Connector Template for AlaiyOS"
+description = "WooCommerce Connector for AlaiyOS"
 requires-python = ">=3.14"
 readme = "README.md"
 dynamic = ["version"]

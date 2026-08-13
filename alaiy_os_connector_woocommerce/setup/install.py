@@ -4,12 +4,16 @@
 Install / migrate plumbing shared by every Alaiy OS connector:
 
   after_install            -> one-time cleanup on `bench install-app`
-  sync_connector_registry  -> (re)register in OS Connector Registry (every migrate)
+  sync_connector_registry  -> (re)register in OS Connector Registry AND
+                               provision custom fields, every bench migrate
 
-Heavy setup (custom fields, price lists, ...) intentionally does NOT run on
-migrate. It runs once, lazily, the first time the connector is enabled from
-its settings form (see the doctype controller's _run_setup()), so installing
-the app is cheap and non-destructive until an admin opts in.
+setup_custom_fields runs unconditionally on every migrate (same pattern as
+alaiy_os_connector_shopify/alaiy_os_connector_unicommerce), not gated behind
+a first-enable step. Confirmed real bug class in other Alaiy OS connectors
+that gated it: any page assuming these fields exist (e.g. a dashboard
+reading a synced field) crashes with a raw OperationalError on a site where
+the connector is installed but never enabled -- hit independently on
+multiple real sites, not a one-off.
 """
 
 import json
@@ -25,22 +29,24 @@ def after_install():
     'Failed to decrypt key' error on first load.
     """
     frappe.db.set_single_value(
-        "Template Connector Settings", "template_api_token", ""
+        "WooCommerce Connector Settings", "wc_consumer_secret", ""
     )
     frappe.db.commit()
 
 
 def sync_connector_registry():
     """
-    Register or update this connector's row in alaiy_os's OS Connector Registry.
-    Called from hooks.py -> after_migrate on every bench migrate. Idempotent.
+    Register or update this connector's row in alaiy_os's OS Connector Registry,
+    and provision custom fields. Called from hooks.py -> after_migrate on every
+    bench migrate. Idempotent.
     """
     _fix_settings_as_single()
+    setup_custom_fields()
 
     if not frappe.db.exists("DocType", "OS Connector Registry"):
         return
 
-    from alaiy_os_connector_template.connector_meta import connector_meta
+    from alaiy_os_connector_woocommerce.connector_meta import connector_meta
 
     connector_id = connector_meta["connector_id"]
 
@@ -85,7 +91,7 @@ def _update_alaiy_os_sidebar():
         frappe.db.commit()
     except Exception:
         frappe.log_error(
-            title="Template connector: sidebar update failed",
+            title="WooCommerce connector: sidebar update failed",
             message=frappe.get_traceback(),
         )
 
@@ -98,36 +104,33 @@ def _fix_settings_as_single():
     """
     frappe.db.sql(
         "UPDATE `tabDocType` SET issingle=1 "
-        "WHERE name='Template Connector Settings' AND issingle=0"
+        "WHERE name='WooCommerce Connector Settings' AND issingle=0"
     )
     frappe.db.commit()
 
 
-# ---------------------------------------------------------------------------
-# First-enable setup (called from the settings controller, not on migrate)
-# ---------------------------------------------------------------------------
 def setup_custom_fields():
     """
     Add this connector's custom fields to ERPNext doctypes. Idempotent — safe
-    to call on every enable/migrate. Replace the examples below with the
-    external-id / flag fields your connector actually needs.
+    to call on every migrate.
     """
     item_fields = [
         {
-            "fieldname": "template_external_id",
-            "label": "Template External ID",
+            "fieldname": "wc_product_id",
+            "label": "WooCommerce Product ID",
             "fieldtype": "Data",
             "search_index": 1,
             "insert_after": "item_code",
+            "description": "The WooCommerce product's own numeric ID -- not the SKU.",
         },
         {
-            "fieldname": "sync_to_template",
-            "label": "Sync to Template",
+            "fieldname": "sync_to_woocommerce",
+            "label": "Sync to WooCommerce",
             "fieldtype": "Check",
             "default": "0",
             "in_list_view": 1,
             "insert_after": "disabled",
-            "description": "Include this Item in Template syncs.",
+            "description": "Include this Item in WooCommerce syncs.",
         },
     ]
 
@@ -155,7 +158,7 @@ def _ensure_custom_fields(doctype, fields):
         cf.in_list_view = 1 if f.get("in_list_view") else 0
         cf.default = f.get("default")
         cf.description = f.get("description", "")
-        cf.module = "Alaiy Os Connector Template"
+        cf.module = "Alaiy Os Connector WooCommerce"
         cf.insert(ignore_permissions=True)
 
 

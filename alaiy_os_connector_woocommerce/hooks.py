@@ -1,7 +1,7 @@
-app_name = "alaiy_os_connector_template"
-app_title = "Alaiy Os Connector Template"
+app_name = "alaiy_os_connector_woocommerce"
+app_title = "Alaiy Os Connector WooCommerce"
 app_publisher = "Alaiy"
-app_description = "Connector Template for AlaiyOS"
+app_description = "WooCommerce Connector for AlaiyOS"
 app_email = "mail@alaiy.com"
 app_license = "agpl-3.0"
 
@@ -17,13 +17,15 @@ required_apps = ["alaiy_os", "erpnext"]
 # ---------------------------------------------------------------------------
 # after_install runs once on `bench install-app`; after_migrate runs on every
 # `bench migrate`. sync_connector_registry() (re)registers this connector in
-# alaiy_os's OS Connector Registry and is idempotent, so it is safe on migrate.
+# alaiy_os's OS Connector Registry AND provisions custom fields (both
+# idempotent), so it is safe -- and necessary -- on every migrate, not just
+# after first-enable.
 after_install = [
-    "alaiy_os_connector_template.setup.install.after_install"
+    "alaiy_os_connector_woocommerce.setup.install.after_install"
 ]
 
 after_migrate = [
-    "alaiy_os_connector_template.setup.install.sync_connector_registry"
+    "alaiy_os_connector_woocommerce.setup.install.sync_connector_registry"
 ]
 
 # ---------------------------------------------------------------------------
@@ -34,8 +36,8 @@ after_migrate = [
 alaiy_os_sidebar_log_items = [
     {
         "link_type": "DocType",
-        "link_to": "Template Sync Log",
-        "label": "Template Logs",
+        "link_to": "WooCommerce Sync Log",
+        "label": "WooCommerce Logs",
         "icon": "activity",
     }
 ]
@@ -44,11 +46,11 @@ alaiy_os_sidebar_log_items = [
 # Scheduler
 # ---------------------------------------------------------------------------
 # Runs every minute; check_and_enqueue() decides whether any sync is actually
-# due based on the intervals configured in Template Connector Settings.
+# due based on the intervals configured in WooCommerce Connector Settings.
 scheduler_events = {
     "cron": {
         "* * * * *": [
-            "alaiy_os_connector_template.template.sync_jobs.check_and_enqueue"
+            "alaiy_os_connector_woocommerce.woocommerce.sync_jobs.check_and_enqueue"
         ]
     }
 }
@@ -58,11 +60,11 @@ scheduler_events = {
 # ---------------------------------------------------------------------------
 # doc_events = {
 # 	"Item": {
-# 		"after_insert": "alaiy_os_connector_template.template.sync.on_item_change",
-# 		"on_update": "alaiy_os_connector_template.template.sync.on_item_change",
+# 		"after_insert": "alaiy_os_connector_woocommerce.woocommerce.sync.on_item_change",
+# 		"on_update": "alaiy_os_connector_woocommerce.woocommerce.sync.on_item_change",
 # 	},
 # 	"Sales Order": {
-# 		"on_submit": "alaiy_os_connector_template.template.sync.on_sales_order_submit",
+# 		"on_submit": "alaiy_os_connector_woocommerce.woocommerce.sync.on_sales_order_submit",
 # 	},
 # }
 
