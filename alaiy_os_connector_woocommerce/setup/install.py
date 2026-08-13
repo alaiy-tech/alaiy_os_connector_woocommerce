@@ -28,6 +28,14 @@ def after_install():
     (e.g. from a prior failed install), which otherwise surfaces as a
     'Failed to decrypt key' error on first load.
     """
+    # Must run first: install-app syncs the doctype but never calls
+    # after_migrate, so the settings doctype is still issingle=0 at this
+    # point -- set_single_value below would write to tabSingles for a
+    # doctype Frappe doesn't yet treat as a Single (confirmed real bug in
+    # alaiy_os_connector_unicommerce's own after_install before it fixed
+    # the same ordering).
+    _fix_settings_as_single()
+
     frappe.db.set_single_value(
         "WooCommerce Connector Settings", "wc_consumer_secret", ""
     )
@@ -112,7 +120,12 @@ def _fix_settings_as_single():
 def setup_custom_fields():
     """
     Add this connector's custom fields to ERPNext doctypes. Idempotent — safe
-    to call on every migrate.
+    to call on every migrate. Uses Frappe's own create_custom_fields(...,
+    update=True) rather than a hand-rolled upsert -- matches
+    alaiy_os_connector_shopify's current approach (its own install.py notes
+    it moved off a hand-rolled upsert to this, since update=True already
+    re-syncs properties like description/read_only on existing fields for
+    free, which a hand-rolled version has to reimplement itself).
     """
     item_fields = [
         {
@@ -134,32 +147,14 @@ def setup_custom_fields():
         },
     ]
 
-    _ensure_custom_fields("Item", item_fields)
+    custom_fields = {"Item": item_fields}
+    for fields in custom_fields.values():
+        for f in fields:
+            f.setdefault("module", "Alaiy Os Connector WooCommerce")
+
+    from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+    create_custom_fields(custom_fields, update=True)
     frappe.db.commit()
-
-
-def _ensure_custom_fields(doctype, fields):
-    for f in fields:
-        key = f"{doctype}-{f['fieldname']}"
-        if frappe.db.exists("Custom Field", key):
-            # Keep the description in sync even for an existing field —
-            # it's just documentation, safe to overwrite.
-            if f.get("description"):
-                frappe.db.set_value("Custom Field", key, "description", f["description"])
-            continue
-        cf = frappe.new_doc("Custom Field")
-        cf.dt = doctype
-        cf.fieldname = f["fieldname"]
-        cf.label = f["label"]
-        cf.fieldtype = f["fieldtype"]
-        cf.insert_after = f.get("insert_after", "")
-        cf.search_index = 1 if f.get("search_index") else 0
-        cf.read_only = 1 if f.get("read_only") else 0
-        cf.in_list_view = 1 if f.get("in_list_view") else 0
-        cf.default = f.get("default")
-        cf.description = f.get("description", "")
-        cf.module = "Alaiy Os Connector WooCommerce"
-        cf.insert(ignore_permissions=True)
 
 
 # ---------------------------------------------------------------------------
