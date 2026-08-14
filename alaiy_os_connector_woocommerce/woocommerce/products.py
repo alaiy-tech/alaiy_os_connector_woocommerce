@@ -209,7 +209,6 @@ def _upsert_item(item_code, item_name, description, image_url, disabled,
         item.image = image_url
     item.wc_product_id = str(wc_product_id)
     item.wc_variation_id = str(wc_variation_id) if wc_variation_id else ""
-    item.sync_to_woocommerce = 1
     item.flags.ignore_permissions = True
 
     if is_new:

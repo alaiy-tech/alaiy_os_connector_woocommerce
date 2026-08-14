@@ -137,15 +137,6 @@ def setup_custom_fields():
             "description": "The WooCommerce product's own numeric ID -- not the SKU.",
         },
         {
-            "fieldname": "sync_to_woocommerce",
-            "label": "Sync to WooCommerce",
-            "fieldtype": "Check",
-            "default": "0",
-            "in_list_view": 1,
-            "insert_after": "disabled",
-            "description": "Include this Item in WooCommerce syncs.",
-        },
-        {
             "fieldname": "wc_variation_id",
             "label": "WooCommerce Variation ID",
             "fieldtype": "Data",
