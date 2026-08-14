@@ -1,40 +1,39 @@
 # Alaiy OS Connector: WooCommerce
 
-Syncs orders, products, and inventory between Alaiy OS and a WooCommerce
-store via WooCommerce's REST API v3.
+Connects a WooCommerce store to [Alaiy OS](https://alaiy.com), syncing
+products, orders, and inventory through WooCommerce's REST API v3.
+
+## Features
+
+- **Product import** — pulls the full catalog, including variable products
+  and their variations, and keeps price, images, category, brand, tags,
+  weight, and stock in sync.
+- **Secure authentication** — HTTP Basic Auth over HTTPS using a WooCommerce
+  REST API key (Consumer Key/Secret), with a live Test Connection check.
+- **Resilient sync** — automatic retry with backoff on rate limits and
+  transient errors, paginated fetches, and a full sync log with per-run
+  counts and failure detail.
+- **Scheduled or on-demand** — configurable pull/push intervals, with a
+  guard against a crashed run blocking future syncs.
 
 ## Setup
 
-1. In the WooCommerce store's WordPress admin: **WooCommerce > Settings >
-   Advanced > REST API**, create a key with **Read/Write** permission.
-2. In Alaiy OS: **WooCommerce Connector Settings**, fill in:
-   - **Store URL** — the site's own URL, e.g. `https://example.com` (no
-     trailing slash, no `/wp-json` suffix — the client appends
-     `/wp-json/wc/v3` itself). Must be HTTPS.
+1. In WooCommerce: **Settings → Advanced → REST API**, create a key with
+   **Read/Write** permission.
+2. In Alaiy OS: open **WooCommerce Connector Settings** and fill in:
+   - **Store URL** — e.g. `https://example.com` (HTTPS required, no
+     trailing slash or `/wp-json` suffix).
    - **Consumer Key** / **Consumer Secret** — from step 1.
    - **Company** / **Default Warehouse** / **Price List** — where synced
      data lands in Alaiy OS.
 3. Click **Test Connection** to confirm the credentials work.
-4. Check **Enable WooCommerce**, save.
+4. Enable the connector and save.
 
-## What's implemented
+## Roadmap
 
-- Registry registration, settings form with a live connector status card,
-  Test Connection, and a `WooCommerce Sync Log` doctype with scheduler
-  support (pull/push interval Selects, staleness guard against a crashed
-  job blocking the schedule forever).
-- `WooCommerceClient` (`woocommerce/client.py`): HTTP Basic Auth (Consumer
-  Key/Secret), retry with backoff on `429/500/502/503/504` (honors
-  `Retry-After`), and a paginated-GET helper for list endpoints
-  (products/orders).
-- `Item.wc_product_id` / `Item.sync_to_woocommerce` custom fields,
-  provisioned unconditionally on every `bench migrate` (not gated behind
-  enabling the connector first).
+Order and customer sync, and pushing inventory/price updates back to
+WooCommerce, are planned next.
 
-## Still to build
+## License
 
-`run_pull_sync` / `run_push_sync` (`woocommerce/sync.py`) are stubs —
-the actual product/order/inventory sync logic against WooCommerce's REST
-API isn't implemented yet. The queued → running → success/failed log
-bookkeeping around them already works; only the `worker(log)` bodies need
-real logic.
+AGPL-3.0
