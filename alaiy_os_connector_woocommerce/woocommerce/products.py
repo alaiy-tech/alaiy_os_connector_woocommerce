@@ -54,19 +54,43 @@ def _stock_uom():
     return frappe.db.get_single_value("Stock Settings", "stock_uom") or _DEFAULT_STOCK_UOM
 
 
+def _ensure_root_item_group():
+    """The standard ERPNext fixture creates "All Item Groups" as the one
+    root (parent_item_group blank, is_group=1) automatically -- but a site
+    where the Selling/Stock module was never fully onboarded can be missing
+    it entirely (confirmed live: a real site had a single leaf Item Group
+    and no root at all, so creating a child under "All Item Groups"
+    without checking first threw a real LinkValidationError). Create the
+    root ourselves if one doesn't already exist, rather than assuming it."""
+    if frappe.db.exists("Item Group", _DEFAULT_ITEM_GROUP):
+        return _DEFAULT_ITEM_GROUP
+    existing_root = frappe.db.get_value(
+        "Item Group", {"is_group": 1, "parent_item_group": ["in", ("", None)]}, "name"
+    )
+    if existing_root:
+        return existing_root
+    doc = frappe.new_doc("Item Group")
+    doc.item_group_name = _DEFAULT_ITEM_GROUP
+    doc.is_group = 1
+    doc.flags.ignore_permissions = True
+    doc.insert()
+    return doc.name
+
+
 def _ensure_item_group(name):
     """Item.item_group is a mandatory Link, not free text -- a WooCommerce
     category name fails outright if no Item Group of that exact name exists
     yet. Creates a flat group under the root if needed."""
+    root = _ensure_root_item_group()
     name = (name or "").strip()
     if not name:
-        return _DEFAULT_ITEM_GROUP
+        return root
     if frappe.db.exists("Item Group", name):
         return name
     try:
         doc = frappe.new_doc("Item Group")
         doc.item_group_name = name
-        doc.parent_item_group = _DEFAULT_ITEM_GROUP
+        doc.parent_item_group = root
         doc.is_group = 0
         doc.flags.ignore_permissions = True
         doc.insert()
@@ -76,7 +100,7 @@ def _ensure_item_group(name):
             title=f"WooCommerce import: failed to create Item Group {name}",
             message=frappe.get_traceback(),
         )
-        return _DEFAULT_ITEM_GROUP
+        return root
 
 
 def _ensure_brand(name):
