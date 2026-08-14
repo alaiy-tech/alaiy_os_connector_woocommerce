@@ -50,7 +50,15 @@ def _run(sync_type, trigger, log_name, worker):
     _mark_running(log)
     try:
         worker(log)
-        _mark_finished(log, "success")
+        # A worker that isolates per-row failures (rather than raising) never
+        # hits the except below, so a run with real failures would otherwise
+        # still be marked "success" here -- check the counter the worker
+        # itself already saved, same convention as alaiy_os_connector_
+        # flipkart's pull_all_listings.
+        if log.items_failed:
+            _mark_finished(log, "failed", log.error_message)
+        else:
+            _mark_finished(log, "success")
     except Exception:
         _mark_finished(log, "failed", frappe.get_traceback())
         frappe.log_error(
@@ -61,13 +69,12 @@ def _run(sync_type, trigger, log_name, worker):
 
 
 def run_pull_sync(trigger="scheduled", log_name=None):
-    """Pull data from the external API into Alaiy OS. TODO: implement."""
+    """Pull data from WooCommerce into Alaiy OS. Product import only for now --
+    orders/customers aren't built yet."""
+    from alaiy_os_connector_woocommerce.woocommerce.products import pull_products
+
     def worker(log):
-        # from alaiy_os_connector_woocommerce.woocommerce.client import WooCommerceClient
-        # client = WooCommerceClient()
-        # data = client.get("...")
-        # ... upsert into ERPNext, updating log counters as you go ...
-        pass
+        pull_products(log)
 
     _run("pull", trigger, log_name, worker)
 

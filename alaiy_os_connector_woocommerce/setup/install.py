@@ -145,6 +145,15 @@ def setup_custom_fields():
             "insert_after": "disabled",
             "description": "Include this Item in WooCommerce syncs.",
         },
+        {
+            "fieldname": "wc_variation_id",
+            "label": "WooCommerce Variation ID",
+            "fieldtype": "Data",
+            "search_index": 1,
+            "insert_after": "wc_product_id",
+            "description": "Set only for an Item pulled from a WooCommerce product variation "
+            "(a variable product's own SKU-level row) -- empty for a simple product.",
+        },
     ]
 
     custom_fields = {"Item": item_fields}
