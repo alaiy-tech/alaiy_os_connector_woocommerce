@@ -69,12 +69,24 @@ def _run(sync_type, trigger, log_name, worker):
 
 
 def run_pull_sync(trigger="scheduled", log_name=None):
-    """Pull data from WooCommerce into Alaiy OS. Product import only for now --
-    orders/customers aren't built yet."""
+    """Pull products from WooCommerce into Alaiy OS. Kept separate from
+    run_order_pull_sync -- each is its own Sync Log row with its own
+    processed/created/updated/failed counts, rather than conflating two
+    different kinds of record into one count."""
     from alaiy_os_connector_woocommerce.woocommerce.products import pull_products
 
     def worker(log):
         pull_products(log)
+
+    _run("pull", trigger, log_name, worker)
+
+
+def run_order_pull_sync(trigger="scheduled", log_name=None):
+    """Pull orders from WooCommerce into Alaiy OS as Sales Orders."""
+    from alaiy_os_connector_woocommerce.woocommerce.orders import pull_orders
+
+    def worker(log):
+        pull_orders(log)
 
     _run("pull", trigger, log_name, worker)
 

@@ -147,7 +147,34 @@ def setup_custom_fields():
         },
     ]
 
-    custom_fields = {"Item": item_fields}
+    sales_order_fields = [
+        {
+            "fieldname": "wc_order_id",
+            "label": "WooCommerce Order ID",
+            "fieldtype": "Data",
+            "search_index": 1,
+            "insert_after": "title",
+            "description": "The WooCommerce order's own numeric ID.",
+        },
+    ]
+
+    customer_fields = [
+        {
+            "fieldname": "wc_customer_email",
+            "label": "WooCommerce Customer Email",
+            "fieldtype": "Data",
+            "search_index": 1,
+            "insert_after": "customer_name",
+            "description": "Billing email from the WooCommerce order that created this "
+            "Customer -- used to match repeat customers on later orders.",
+        },
+    ]
+
+    custom_fields = {
+        "Item": item_fields,
+        "Sales Order": sales_order_fields,
+        "Customer": customer_fields,
+    }
     for fields in custom_fields.values():
         for f in fields:
             f.setdefault("module", "Alaiy Os Connector WooCommerce")
