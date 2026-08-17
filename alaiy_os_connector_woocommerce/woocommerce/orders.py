@@ -146,7 +146,40 @@ def _upsert_order(order, warehouse, company, price_list, territory):
     so.flags.ignore_permissions = True
     so.insert()
     so.submit()
+    _pull_order_notes(so.name, wc_order_id)
     return True
+
+
+def _pull_order_notes(so_name, wc_order_id):
+    """Order Notes have no bulk/global endpoint -- only per-order
+    (/orders/<id>/notes) -- so this only runs once, on first import of the
+    order, rather than re-fetching notes for every already-pulled order on
+    every run. A note added to WooCommerce after that point (e.g. a later
+    refund note) won't retroactively appear -- a real, accepted gap, not a
+    bug: re-fetching notes for the whole order history on every pull would
+    turn one API call per page into one per order, every run."""
+    from alaiy_os_connector_woocommerce.woocommerce.client import WooCommerceClient
+
+    try:
+        client = WooCommerceClient()
+        for page in client.get_all_pages(f"orders/{wc_order_id}/notes"):
+            for note in page:
+                text = (note.get("note") or "").strip()
+                if not text:
+                    continue
+                comment = frappe.new_doc("Comment")
+                comment.comment_type = "Comment"
+                comment.reference_doctype = "Sales Order"
+                comment.reference_name = so_name
+                comment.content = text
+                comment.comment_email = note.get("author") or "WooCommerce"
+                comment.flags.ignore_permissions = True
+                comment.insert(ignore_permissions=True)
+    except Exception:
+        frappe.log_error(
+            title=f"WooCommerce order pull: failed to fetch notes for order {wc_order_id}",
+            message=frappe.get_traceback(),
+        )
 
 
 def pull_orders(log):

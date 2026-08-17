@@ -91,6 +91,46 @@ def run_order_pull_sync(trigger="scheduled", log_name=None):
     _run("pull", trigger, log_name, worker)
 
 
+def run_customer_pull_sync(trigger="scheduled", log_name=None):
+    """Pull the full WooCommerce customer list + addresses into Customer."""
+    from alaiy_os_connector_woocommerce.woocommerce.customers import pull_customers
+
+    def worker(log):
+        pull_customers(log)
+
+    _run("pull", trigger, log_name, worker)
+
+
+def run_category_pull_sync(trigger="scheduled", log_name=None):
+    """Pull the product category tree from WooCommerce into Item Group."""
+    from alaiy_os_connector_woocommerce.woocommerce.categories import pull_categories
+
+    def worker(log):
+        pull_categories(log)
+
+    _run("pull", trigger, log_name, worker)
+
+
+def run_tag_pull_sync(trigger="scheduled", log_name=None):
+    """Pull the product tag master list from WooCommerce into Tag."""
+    from alaiy_os_connector_woocommerce.woocommerce.tags import pull_tags
+
+    def worker(log):
+        pull_tags(log)
+
+    _run("pull", trigger, log_name, worker)
+
+
+def run_attribute_pull_sync(trigger="scheduled", log_name=None):
+    """Pull product attributes + their terms into Item Attribute."""
+    from alaiy_os_connector_woocommerce.woocommerce.attributes import pull_attributes
+
+    def worker(log):
+        pull_attributes(log)
+
+    _run("pull", trigger, log_name, worker)
+
+
 def run_push_sync(trigger="scheduled", log_name=None):
     """Push Alaiy OS data out to the external API. TODO: implement."""
     def worker(log):

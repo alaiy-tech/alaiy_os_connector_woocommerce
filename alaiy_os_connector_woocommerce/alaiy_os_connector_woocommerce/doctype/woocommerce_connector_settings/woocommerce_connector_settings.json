@@ -16,7 +16,9 @@
     "wc_price_list",
     "sb_schedule",
     "wc_pull_sync_interval",
-    "wc_push_sync_interval"
+    "wc_push_sync_interval",
+    "sb_webhooks",
+    "wc_webhook_secret"
   ],
   "fields": [
     {
@@ -100,6 +102,17 @@
       "label": "Push Sync Interval",
       "options": "Disabled\n5 min\n15 min\n30 min\n60 min",
       "reqd": 1
+    },
+    {
+      "fieldname": "sb_webhooks",
+      "fieldtype": "Section Break",
+      "label": "Webhooks (real-time pull)"
+    },
+    {
+      "description": "Secret set on each WooCommerce webhook (WooCommerce > Settings > Advanced > Webhooks). Verifies the X-WC-Webhook-Signature header on every inbound call -- leave blank to accept unsigned payloads (not recommended).",
+      "fieldname": "wc_webhook_secret",
+      "fieldtype": "Password",
+      "label": "Webhook Secret"
     }
   ],
   "is_single": 1,

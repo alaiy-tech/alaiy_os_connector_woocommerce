@@ -168,12 +168,33 @@ def setup_custom_fields():
             "description": "Billing email from the WooCommerce order that created this "
             "Customer -- used to match repeat customers on later orders.",
         },
+        {
+            "fieldname": "wc_customer_id",
+            "label": "WooCommerce Customer ID",
+            "fieldtype": "Data",
+            "search_index": 1,
+            "insert_after": "wc_customer_email",
+            "description": "The WooCommerce customer's own numeric ID -- set by the "
+            "dedicated customer pull, more robust than email matching alone.",
+        },
+    ]
+
+    item_group_fields = [
+        {
+            "fieldname": "wc_category_id",
+            "label": "WooCommerce Category ID",
+            "fieldtype": "Data",
+            "search_index": 1,
+            "insert_after": "item_group_name",
+            "description": "The WooCommerce product category's own numeric ID.",
+        },
     ]
 
     custom_fields = {
         "Item": item_fields,
         "Sales Order": sales_order_fields,
         "Customer": customer_fields,
+        "Item Group": item_group_fields,
     }
     for fields in custom_fields.values():
         for f in fields:
