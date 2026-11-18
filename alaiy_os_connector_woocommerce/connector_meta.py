@@ -3,6 +3,14 @@ Single source of truth for this connector's registration metadata.
 Consumed by setup/install.py → upserted into alaiy_os's OS Connector Registry.
 """
 
+# Columns of WooCommerce Sync Log, named the way the Connector Health page reads them.
+_LOG_FIELDS = {
+    "processed": "items_processed",
+    "changed": ["items_created", "items_updated"],
+    "failed": "items_failed",
+    "error": "error_message",
+}
+
 connector_meta = {
     "connector_id": "woocommerce",
     "connector_name": "WooCommerce",
@@ -21,4 +29,17 @@ connector_meta = {
     "sync_items_label": "Push",
     "is_enabled": 0,
     "connection_status": "untested",
+    "health": [
+        {
+            "key": "pull",
+            "label": "Product pull",
+            "direction": "pull",
+            "log_doctype": "WooCommerce Sync Log",
+            "log_filter": {"sync_type": "pull"},
+            "fields": _LOG_FIELDS,
+            "interval_setting": "wc_pull_sync_interval",
+            "scheduled": True,
+            "expects_rows": True,
+        },
+    ],
 }
